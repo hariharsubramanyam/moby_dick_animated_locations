@@ -7,7 +7,40 @@
 
 #toolbar {
   position: absolute;
+  width: 100%;
   z-index: 100;
-  bottom: 5px;
+  bottom: 10px;
   left: 5px;
+  right: 5px;
+}
+
+#overlay_button {
+  margin-right: 5%;
+}
+
+#filter_div {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+#filter_term {
+  width: 400px;
+}
+
+#seq_no {
+  color: white;
+  margin-right: 1%;
+  display: inline-block;
+}
+
+.leftLabel, .rightLabel {
+  display: inline-block;
+  font-size: 20pt;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  vertical-align: bottom;
+}
+
+.nstSlider {
+  top: 10px;
+  display: inline-block;
 }

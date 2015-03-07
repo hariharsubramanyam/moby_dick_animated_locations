@@ -98,10 +98,33 @@
     });
   };
 
+  var createSlider = function() {
+    $(".nstSlider").data("range_max", locationData.length)
+      .data("cur_max", locationData.length);
+    $('.nstSlider').nstSlider({
+        "left_grip_selector": ".leftGrip",
+        "right_grip_selector": ".rightGrip",
+        "value_bar_selector": ".bar",
+        "value_changed_callback": function(cause, leftValue, rightValue) {
+          $('.leftLabel').text(pad(leftValue, 4));
+          $('.rightLabel').text(pad(rightValue, 4));
+        }
+    });
+  };
+
+  var pad = function(str, len) {
+    str = "" + str;
+    while (str.length < len) {
+      str = "0" + str;
+    }
+    return str;
+  };
+
   $(document).ready(function() {
     loadLocationData(function() {
       bindVariables();
       createMap();
+      createSlider();
       createOldMapOverlay();
       createHandlers();
       createMarkers();
