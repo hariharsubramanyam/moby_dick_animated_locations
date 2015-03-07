@@ -17,7 +17,7 @@
 
   var createOldMapOverlay = function() {
     var imageBounds = new google.maps.LatLngBounds( new google.maps.LatLng(-82.0, -180.0), new google.maps.LatLng(82.36, 167.0));
-    var imageUrl = "http://localhost:8000/images/OverlayMap.jpg";
+    var imageUrl = "images/OverlayMap.jpg";
     oldMapOverlay = new google.maps.GroundOverlay(imageUrl, imageBounds,
     {
       "opacity": 0.8
