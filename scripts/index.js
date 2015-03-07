@@ -6,6 +6,8 @@
 
   var overlayButton;
 
+  var locationData;
+
   var createOldMapOverlay = function() {
     var imageBounds = new google.maps.LatLngBounds( new google.maps.LatLng(-82.0, -180.0), new google.maps.LatLng(82.36, 167.0));
     var imageUrl = "http://localhost:8000/images/OverlayMap.jpg";
@@ -61,10 +63,48 @@
     overlayButton = $("#overlay_button");
   };
 
+  var loadLocationData = function(callback) {
+    $.get("data/md-locations.json", function(data) {
+      locationData = data;
+      callback();
+    });
+  };
+
+  var createMarkers = function() {
+    var circle ={
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: 'red',
+        fillOpacity: .4,
+        scale: 4.5,
+        strokeColor: 'white',
+        strokeWeight: 1
+    };
+    locationData.forEach(function(loc) {
+      var infoWindow = new google.maps.InfoWindow({
+        "content": "<p style='color: black'><strong>Quote:</strong> " + loc.quote + "</p>"
+          + "<p style='color: black'><strong>Seq No:</strong> " + loc.seq_no + "</p>"
+          + "<p style='color: black'><strong>Page No:</strong> " + loc.page_no + "</p>"
+          + "<p style='color: black'><strong>Line No:</strong> " + loc.line_no + "</p>"
+      });
+      loc.marker = new google.maps.Marker({
+        "position": new google.maps.LatLng(loc.lat, loc.lon),
+        "map": map,
+        "title": loc.quote,
+        "icon": circle
+      });
+      google.maps.event.addListener(loc.marker, "click", function() {
+        infoWindow.open(map, loc.marker);
+      });
+    });
+  };
+
   $(document).ready(function() {
-    bindVariables();
-    createMap();
-    createOldMapOverlay();
-    createHandlers();
+    loadLocationData(function() {
+      bindVariables();
+      createMap();
+      createOldMapOverlay();
+      createHandlers();
+      createMarkers();
+    });
   });
 })();
