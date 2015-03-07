@@ -3,8 +3,15 @@
   var oldMapOverlay;
 
   var isOverlaid;
+  var isSearching;
 
   var overlayButton;
+  var slider;
+  var leftLabel;
+  var rightLabel;
+  var searchBox;
+  var searchButton;
+  var seqFilterButton;
 
   var locationData;
 
@@ -16,6 +23,7 @@
       "opacity": 0.8
     });
     isOverlaid = false;
+    isSearching = false;
   };
 
   var overlayOldMap = function() {
@@ -42,6 +50,51 @@
 
   var createHandlers = function() {
     overlayButton.click(handleOverlay);
+    seqFilterButton.click(function() {
+      handleSeqFilter();
+    });
+    searchButton.click(handleSearch);
+  };
+
+  var handleSearch = function() {
+    if (isSearching) {
+      searchButton.text("Search")
+        .removeClass("btn-default")
+        .addClass("btn-primary");
+      searchBox.text("");
+      handleSeqFilter();
+    } else {
+      searchButton.text("Cancel")
+        .removeClass("btn-primary")
+        .addClass("btn-default");
+      var str = searchBox.val();
+      var fn = handleSeqFilter(true);
+      filterMarkers(function(loc) {
+        return fn(loc) && loc.quote.indexOf(str) != -1;
+      });
+    }
+    isSearching = !isSearching;
+  };
+
+  var handleSeqFilter = function(defer) {
+    var min = parseInt(leftLabel.text(), 10);
+    var max = parseInt(rightLabel.text(), 10);
+    var fn = function(loc) {
+      return min <= loc.seq_no && loc.seq_no <= max;
+    };
+    if (defer) {
+      return fn;
+    }
+    filterMarkers(fn);
+  };
+
+  var filterMarkers = function(fn) {
+    locationData.forEach(function(loc) {
+      loc.marker.setMap(null);
+      if (fn(loc)) {
+        loc.marker.setMap(map);
+      }
+    });
   };
 
   var handleOverlay = function() {
@@ -61,6 +114,12 @@
 
   var bindVariables = function() {
     overlayButton = $("#overlay_button");
+    slider = $(".nstSlider");
+    leftLabel = $(".leftLabel");
+    rightLabel = $(".rightLabel");
+    searchBox = $("#filter_term");
+    searchButton = $("#filter_button");
+    seqFilterButton = $("#seq_filter");
   };
 
   var loadLocationData = function(callback) {
@@ -99,15 +158,16 @@
   };
 
   var createSlider = function() {
-    $(".nstSlider").data("range_max", locationData.length)
-      .data("cur_max", locationData.length);
-    $('.nstSlider').nstSlider({
+    slider.data("range_max", locationData.length)
+      .data("cur_max", locationData.length)
+      .nstSlider({
+        "rounding": 1,
         "left_grip_selector": ".leftGrip",
         "right_grip_selector": ".rightGrip",
         "value_bar_selector": ".bar",
         "value_changed_callback": function(cause, leftValue, rightValue) {
-          $('.leftLabel').text(pad(leftValue, 4));
-          $('.rightLabel').text(pad(rightValue, 4));
+          leftLabel.text(pad(leftValue, 4));
+          rightLabel.text(pad(rightValue, 4));
         }
     });
   };
