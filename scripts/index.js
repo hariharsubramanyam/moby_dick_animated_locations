@@ -4,6 +4,11 @@
 
   var isOverlaid;
   var isSearching;
+  var isAnimating;
+
+  var animationTimer;
+  var origMin;
+  var origMax;
 
   var overlayButton;
   var slider;
@@ -12,6 +17,7 @@
   var searchBox;
   var searchButton;
   var seqFilterButton;
+  var animateButton;
 
   var locationData;
 
@@ -24,6 +30,7 @@
     });
     isOverlaid = false;
     isSearching = false;
+    isAnimating = false;
   };
 
   var overlayOldMap = function() {
@@ -50,10 +57,42 @@
 
   var createHandlers = function() {
     overlayButton.click(handleOverlay);
-    seqFilterButton.click(function() {
-      handleSeqFilter();
-    });
+    seqFilterButton.click(updateMarkers);
     searchButton.click(handleSearch);
+    animateButton.click(handleAnimate);
+  };
+
+  var handleAnimate = function() {
+    if (isAnimating) {
+      $(".btn").show();
+      animateButton.text("Animate")
+        .removeClass("btn-default")
+        .addClass("btn-primary");
+      clearInterval(animationTimer);
+      slider.nstSlider("set_position", origMin, origMax);
+      updateMarkers();
+    } else {
+      $(".btn").hide();
+      $("#animate_button").show();
+      animateButton.text("Cancel")
+        .removeClass("btn-primary")
+        .addClass("btn-default");
+      updateMarkers("clear");
+      locationData[0].marker.setMap(map);
+      origMin = parseInt(leftLabel.text(), 10);
+      origMax = parseInt(rightLabel.text(), 10);
+      var i = 1;
+      animationTimer = setInterval(function() {
+        locationData[i-1].marker.setMap(null);
+        locationData[i].marker.setMap(map);
+        i++;
+        slider.nstSlider("set_position", i+1, i+1);
+        if (i > locationData.length) {
+          clearInterval(animationTimer);
+        }
+      }, 300);
+    }
+    isAnimating = !isAnimating;
   };
 
   var handleSearch = function() {
@@ -62,36 +101,40 @@
         .removeClass("btn-default")
         .addClass("btn-primary");
       searchBox.text("");
-      handleSeqFilter();
     } else {
       searchButton.text("Cancel")
         .removeClass("btn-primary")
         .addClass("btn-default");
-      var str = searchBox.val();
-      var fn = handleSeqFilter(true);
-      filterMarkers(function(loc) {
-        return fn(loc) && loc.quote.indexOf(str) != -1;
-      });
     }
     isSearching = !isSearching;
+    updateMarkers();
   };
 
-  var handleSeqFilter = function(defer) {
+  var updateMarkers = function(clearOptions) {
+    var searchFunc = function() {return true;};
+    if (isSearching) {
+      var str = searchBox.val();
+      searchFunc = function(loc) {
+        return loc.quote.indexOf(str) != -1;
+      }
+    }
+
     var min = parseInt(leftLabel.text(), 10);
     var max = parseInt(rightLabel.text(), 10);
-    var fn = function(loc) {
+    var filterFunc = function(loc) {
       return min <= loc.seq_no && loc.seq_no <= max;
     };
-    if (defer) {
-      return fn;
-    }
-    filterMarkers(fn);
-  };
-
-  var filterMarkers = function(fn) {
+    
     locationData.forEach(function(loc) {
       loc.marker.setMap(null);
-      if (fn(loc)) {
+      if (clearOptions === "clear") {
+        return;
+      }
+      if (clearOptions === "show") {
+        loc.marker.setMap(map);
+        return;
+      }
+      if (searchFunc(loc) && filterFunc(loc)) {
         loc.marker.setMap(map);
       }
     });
@@ -120,6 +163,7 @@
     searchBox = $("#filter_term");
     searchButton = $("#filter_button");
     seqFilterButton = $("#seq_filter");
+    animateButton = $("#animate_button");
   };
 
   var loadLocationData = function(callback) {

@@ -14,14 +14,11 @@
   right: 5px;
 }
 
-#overlay_button {
-  margin-right: 5%;
-}
-
 #filter_div {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
 #filter_term {
   width: 400px;
 }
